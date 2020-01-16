@@ -20,6 +20,7 @@
 
 import json
 import urllib2
+import six
 
 from django import forms
 from sentry import tagstore
@@ -81,6 +82,14 @@ class PayloadFactory:
             "icon_url": "https://myovchev.github.io/sentry-slack/images/logo32.png", #noqa
             "text": text
         }
+
+        channel_prefix = plugin.get_option('channel_prefix', project)
+        if channel_prefix:
+            if params["env"]:
+                payload["channel"] = "{}-{}".format(channel_prefix, params["env"])
+            else:
+                payload["channel"] = channel_prefix
+
         return payload
 
 
@@ -95,6 +104,10 @@ class MattermostOptionsForm(notify.NotificationConfigurationForm):
     webhook = forms.URLField(
         help_text='Incoming Webhook URL',
         widget=forms.URLInput(attrs={'class': 'span8'})
+    )
+    channel_prefix = forms.CharField(
+        help_text='Include triggering rules with notifications',
+        required=True
     )
     include_rules = forms.BooleanField(
         help_text='Include triggering rules with notifications',
@@ -125,4 +138,18 @@ class Mattermost(notify.NotificationPlugin):
 
         webhook = self.get_option('webhook', project)
         payload = PayloadFactory.create(self, notification)
-        return request(webhook, payload)
+
+        try:
+            request(webhook, payload)
+            return True
+        except Exception as err:
+            self.logger.info(
+                "notification-plugin.notify-failed",
+                extra={
+                    "error": six.text_type(err),
+                    "plugin": self.slug,
+                    "project_id": notification.event.group.project_id,
+                    "organization_id": notification.event.group.project.organization_id,
+                },
+            )
+            return False
