@@ -147,6 +147,7 @@ class Mattermost(notify.NotificationPlugin):
                 "notification-plugin.notify-failed",
                 extra={
                     "error": six.text_type(err),
+                    "hook": webhook,
                     "plugin": self.slug,
                     "project_id": notification.event.group.project_id,
                     "organization_id": notification.event.group.project.organization_id,
