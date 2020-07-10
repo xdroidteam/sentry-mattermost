@@ -80,15 +80,9 @@ class PayloadFactory:
         payload = {
             "username": "Sentry",
             "icon_url": "https://myovchev.github.io/sentry-slack/images/logo32.png", #noqa
-            "text": text
+            "text": text,
+            "channel": plugin.get_option('channel_prefix', project)
         }
-
-        channel_prefix = plugin.get_option('channel_prefix', project)
-        if channel_prefix:
-            if params["env"]:
-                payload["channel"] = "{}-{}".format(channel_prefix, params["env"])
-            else:
-                payload["channel"] = channel_prefix
 
         return payload
 
