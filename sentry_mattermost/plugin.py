@@ -39,6 +39,8 @@ def get_rules(notification, group, project):
         rules.append(rule.label.encode('utf-8'))
     return ', '.join('%s' % r for r in rules)
 
+def get_tag(event, tag):
+    return dict(event.get_tags()).get(tag)
 
 def get_tags(event):
     tag_list = event.get_tags()
@@ -52,7 +54,7 @@ def get_tags(event):
 class PayloadFactory:
     @classmethod
     def render_text(cls, params):
-        template = "__{project}__|__{env}__\n__[{title}]({link})__ \n{culprit}\n"
+        template = "__{project}__|__[{app_url}]({app_url})__\n__[{title}]({link})__ \n{git_branch}|{git_version}\n"
         return template.format(**params)
 
     @classmethod
@@ -66,7 +68,10 @@ class PayloadFactory:
             "link": group.get_absolute_url(),
             "culprit": group.culprit.encode('utf-8'),
             "project": project.name,
-            "env": event.get_environment().name
+            "env": event.get_environment().name,
+            "app_url": get_tag(event, "app_url"),
+            "git_branch": get_tag(event, "git_branch"),
+            "git_version": get_tag(event, "git_version")
         }
 
         if plugin.get_option('include_rules', project):
