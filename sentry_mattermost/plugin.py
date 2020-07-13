@@ -54,7 +54,7 @@ def get_tags(event):
 class PayloadFactory:
     @classmethod
     def render_text(cls, params):
-        template = "__{project}__|__[{app_url}]({app_url})__\n__[{title}]({link})__ \n{git_branch}|{git_version}\n"
+        template = "__{project}__|__[{app_url}]({app_url})__\n__[{title}]({link})__ \n{git_branch}\n{git_version}\n"
         return template.format(**params)
 
     @classmethod
